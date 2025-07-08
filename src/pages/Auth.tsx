@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Stethoscope } from "lucide-react";
@@ -18,8 +17,7 @@ const Auth = () => {
     email: "", 
     password: "", 
     firstName: "", 
-    lastName: "", 
-    role: "" as 'patient' | 'dentist' 
+    lastName: ""
   });
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
@@ -52,18 +50,13 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupData.role) {
-      toast.error("Please select a role");
-      return;
-    }
-    
     setLoading(true);
 
     try {
       const { error } = await signUp(
         signupData.email, 
         signupData.password, 
-        signupData.role,
+        'patient', // Always patient for signup
         signupData.firstName,
         signupData.lastName
       );
@@ -94,7 +87,7 @@ const Auth = () => {
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signup">Patient Signup</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
@@ -138,9 +131,9 @@ const Auth = () => {
           <TabsContent value="signup">
             <Card>
               <CardHeader>
-                <CardTitle>Create Account</CardTitle>
+                <CardTitle>Create Patient Account</CardTitle>
                 <CardDescription>
-                  Join our dental clinic management system
+                  Register as a new patient
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -166,18 +159,6 @@ const Auth = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="role">I am a</Label>
-                    <Select onValueChange={(value: 'patient' | 'dentist') => setSignupData(prev => ({ ...prev, role: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="patient">Patient</SelectItem>
-                        <SelectItem value="dentist">Dentist</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
                     <Label htmlFor="signupEmail">Email</Label>
                     <Input
                       id="signupEmail"
@@ -199,7 +180,7 @@ const Auth = () => {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Creating account..." : "Create Account"}
+                    {loading ? "Creating account..." : "Create Patient Account"}
                   </Button>
                 </form>
               </CardContent>

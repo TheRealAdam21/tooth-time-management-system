@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +20,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<'patient' | 'dentist' | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const determineUserRole = async (userId: string, email: string) => {
+    // First check if user exists in dentists table
+    const { data: dentistData } = await supabase
+      .from('dentists')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (dentistData) {
+      return 'dentist';
+    }
+
+    // Otherwise, check patients table or default to patient
+    const { data: patientData } = await supabase
+      .from('patients')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    return patientData ? 'patient' : 'patient'; // Default to patient
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -29,13 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Determine user role based on email domain or user metadata
-          const email = session.user.email;
-          if (email?.includes('@dentalclinic.com')) {
-            setUserRole('dentist');
-          } else {
-            setUserRole('patient');
-          }
+          const role = await determineUserRole(session.user.id, session.user.email!);
+          setUserRole(role);
         } else {
           setUserRole(null);
         }
@@ -44,17 +60,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const email = session.user.email;
-        if (email?.includes('@dentalclinic.com')) {
-          setUserRole('dentist');
-        } else {
-          setUserRole('patient');
-        }
+        const role = await determineUserRole(session.user.id, session.user.email!);
+        setUserRole(role);
       }
       setLoading(false);
     });
@@ -91,13 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         last_name: lastName,
         email: email,
         phone: '' // Will be updated later
-      }]);
-    } else if (!error && role === 'dentist') {
-      // Create dentist record
-      await supabase.from('dentists').insert([{
-        first_name: firstName,
-        last_name: lastName,
-        email: email
       }]);
     }
 
