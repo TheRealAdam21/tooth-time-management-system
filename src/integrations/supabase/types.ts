@@ -101,9 +101,111 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_history: {
+        Row: {
+          allergies: Json | null
+          bleeding_time: string | null
+          blood_pressure: string | null
+          blood_type: string | null
+          created_at: string
+          hospitalization_details: string | null
+          hospitalized: string | null
+          id: string
+          illness_description: string | null
+          in_good_health: string | null
+          in_medical_treatment: string | null
+          is_nursing: string | null
+          is_pregnant: string | null
+          medical_conditions: Json | null
+          medication_details: string | null
+          other_allergy: string | null
+          patient_id: string
+          physician_address: string | null
+          physician_name: string | null
+          physician_phone: string | null
+          physician_specialty: string | null
+          serious_illness: string | null
+          taking_birth_control: string | null
+          taking_medication: string | null
+          treatment_condition: string | null
+          updated_at: string
+          uses_alcohol_drugs: string | null
+          uses_tobacco: string | null
+        }
+        Insert: {
+          allergies?: Json | null
+          bleeding_time?: string | null
+          blood_pressure?: string | null
+          blood_type?: string | null
+          created_at?: string
+          hospitalization_details?: string | null
+          hospitalized?: string | null
+          id?: string
+          illness_description?: string | null
+          in_good_health?: string | null
+          in_medical_treatment?: string | null
+          is_nursing?: string | null
+          is_pregnant?: string | null
+          medical_conditions?: Json | null
+          medication_details?: string | null
+          other_allergy?: string | null
+          patient_id: string
+          physician_address?: string | null
+          physician_name?: string | null
+          physician_phone?: string | null
+          physician_specialty?: string | null
+          serious_illness?: string | null
+          taking_birth_control?: string | null
+          taking_medication?: string | null
+          treatment_condition?: string | null
+          updated_at?: string
+          uses_alcohol_drugs?: string | null
+          uses_tobacco?: string | null
+        }
+        Update: {
+          allergies?: Json | null
+          bleeding_time?: string | null
+          blood_pressure?: string | null
+          blood_type?: string | null
+          created_at?: string
+          hospitalization_details?: string | null
+          hospitalized?: string | null
+          id?: string
+          illness_description?: string | null
+          in_good_health?: string | null
+          in_medical_treatment?: string | null
+          is_nursing?: string | null
+          is_pregnant?: string | null
+          medical_conditions?: Json | null
+          medication_details?: string | null
+          other_allergy?: string | null
+          patient_id?: string
+          physician_address?: string | null
+          physician_name?: string | null
+          physician_phone?: string | null
+          physician_specialty?: string | null
+          serious_illness?: string | null
+          taking_birth_control?: string | null
+          taking_medication?: string | null
+          treatment_condition?: string | null
+          updated_at?: string
+          uses_alcohol_drugs?: string | null
+          uses_tobacco?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_history_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
+          age: number | null
           created_at: string
           date_of_birth: string | null
           email: string | null
@@ -115,12 +217,15 @@ export type Database = {
           insurance_policy_number: string | null
           insurance_provider: string | null
           last_name: string
+          marital_status: string | null
           medical_history: string | null
+          occupation: string | null
           phone: string
           updated_at: string
         }
         Insert: {
           address?: string | null
+          age?: number | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
@@ -132,12 +237,15 @@ export type Database = {
           insurance_policy_number?: string | null
           insurance_provider?: string | null
           last_name: string
+          marital_status?: string | null
           medical_history?: string | null
+          occupation?: string | null
           phone: string
           updated_at?: string
         }
         Update: {
           address?: string | null
+          age?: number | null
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
@@ -149,7 +257,9 @@ export type Database = {
           insurance_policy_number?: string | null
           insurance_provider?: string | null
           last_name?: string
+          marital_status?: string | null
           medical_history?: string | null
+          occupation?: string | null
           phone?: string
           updated_at?: string
         }

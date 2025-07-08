@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +23,6 @@ const PatientForm = () => {
     address: "",
     emergency_contact_name: "",
     emergency_contact_phone: "",
-    medical_history: "",
     insurance_provider: "",
     insurance_policy_number: "",
     gender: "",
@@ -94,44 +92,66 @@ const PatientForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Convert arrays to JSON strings for storage
-      const submissionData = {
-        ...formData,
-        allergies: JSON.stringify(formData.allergies),
-        medical_conditions: JSON.stringify(formData.medical_conditions),
-        medical_history: JSON.stringify({
-          physician_name: formData.physician_name,
-          physician_specialty: formData.physician_specialty,
-          physician_address: formData.physician_address,
-          physician_phone: formData.physician_phone,
-          in_good_health: formData.in_good_health,
-          in_medical_treatment: formData.in_medical_treatment,
-          treatment_condition: formData.treatment_condition,
-          serious_illness: formData.serious_illness,
-          illness_description: formData.illness_description,
-          hospitalized: formData.hospitalized,
-          hospitalization_details: formData.hospitalization_details,
-          taking_medication: formData.taking_medication,
-          medication_details: formData.medication_details,
-          uses_tobacco: formData.uses_tobacco,
-          uses_alcohol_drugs: formData.uses_alcohol_drugs,
-          allergies: formData.allergies,
-          other_allergy: formData.other_allergy,
-          bleeding_time: formData.bleeding_time,
-          is_pregnant: formData.is_pregnant,
-          is_nursing: formData.is_nursing,
-          taking_birth_control: formData.taking_birth_control,
-          blood_type: formData.blood_type,
-          blood_pressure: formData.blood_pressure,
-          medical_conditions: formData.medical_conditions
-        })
+      // First, insert patient data
+      const patientData = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        date_of_birth: formData.date_of_birth,
+        age: formData.age ? parseInt(formData.age) : null,
+        occupation: formData.occupation,
+        marital_status: formData.marital_status,
+        address: formData.address,
+        emergency_contact_name: formData.emergency_contact_name,
+        emergency_contact_phone: formData.emergency_contact_phone,
+        insurance_provider: formData.insurance_provider,
+        insurance_policy_number: formData.insurance_policy_number,
+        gender: formData.gender
       };
 
-      const { error } = await supabase
+      const { data: patientResult, error: patientError } = await supabase
         .from('patients')
-        .insert([submissionData]);
+        .insert([patientData])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (patientError) throw patientError;
+
+      // Then, insert medical history data
+      const medicalHistoryData = {
+        patient_id: patientResult.id,
+        physician_name: formData.physician_name,
+        physician_specialty: formData.physician_specialty,
+        physician_address: formData.physician_address,
+        physician_phone: formData.physician_phone,
+        in_good_health: formData.in_good_health,
+        in_medical_treatment: formData.in_medical_treatment,
+        treatment_condition: formData.treatment_condition,
+        serious_illness: formData.serious_illness,
+        illness_description: formData.illness_description,
+        hospitalized: formData.hospitalized,
+        hospitalization_details: formData.hospitalization_details,
+        taking_medication: formData.taking_medication,
+        medication_details: formData.medication_details,
+        uses_tobacco: formData.uses_tobacco,
+        uses_alcohol_drugs: formData.uses_alcohol_drugs,
+        allergies: formData.allergies,
+        other_allergy: formData.other_allergy,
+        bleeding_time: formData.bleeding_time,
+        is_pregnant: formData.is_pregnant,
+        is_nursing: formData.is_nursing,
+        taking_birth_control: formData.taking_birth_control,
+        blood_type: formData.blood_type,
+        blood_pressure: formData.blood_pressure,
+        medical_conditions: formData.medical_conditions
+      };
+
+      const { error: medicalHistoryError } = await supabase
+        .from('medical_history')
+        .insert([medicalHistoryData]);
+
+      if (medicalHistoryError) throw medicalHistoryError;
 
       toast.success("Patient registered successfully!");
       
@@ -148,7 +168,6 @@ const PatientForm = () => {
         address: "",
         emergency_contact_name: "",
         emergency_contact_phone: "",
-        medical_history: "",
         insurance_provider: "",
         insurance_policy_number: "",
         gender: "",
