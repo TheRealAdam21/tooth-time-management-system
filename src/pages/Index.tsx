@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import PatientDashboard from "@/components/PatientDashboard";
 import DentistDashboardFull from "@/components/DentistDashboardFull";
 
 const Index = () => {
@@ -10,10 +9,10 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && (!user || userRole !== 'dentist')) {
       navigate('/auth');
     }
-  }, [user, loading, navigate]);
+  }, [user, userRole, loading, navigate]);
 
   if (loading) {
     return (
@@ -26,24 +25,11 @@ const Index = () => {
     );
   }
 
-  if (!user) {
+  if (!user || userRole !== 'dentist') {
     return null; // Will redirect to auth
   }
 
-  // Show appropriate dashboard based on user role
-  if (userRole === 'patient') {
-    return <PatientDashboard />;
-  } else if (userRole === 'dentist') {
-    return <DentistDashboardFull />;
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-gray-600">Unable to determine user role. Please contact support.</p>
-      </div>
-    </div>
-  );
+  return <DentistDashboardFull />;
 };
 
 export default Index;
