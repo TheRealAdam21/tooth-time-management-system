@@ -16,6 +16,9 @@ const PatientForm = () => {
     email: "",
     phone: "",
     date_of_birth: "",
+    age: "",
+    occupation: "",
+    marital_status: "",
     address: "",
     emergency_contact_name: "",
     emergency_contact_phone: "",
@@ -49,6 +52,9 @@ const PatientForm = () => {
         email: "",
         phone: "",
         date_of_birth: "",
+        age: "",
+        occupation: "",
+        marital_status: "",
         address: "",
         emergency_contact_name: "",
         emergency_contact_phone: "",
@@ -95,18 +101,57 @@ const PatientForm = () => {
               </div>
             </div>
             
-            <div>
-              <Label htmlFor="gender">Gender</Label>
-              <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="gender">Gender</Label>
+                <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={(e) => handleInputChange("age", e.target.value)}
+                  placeholder="Enter age"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="occupation">Occupation</Label>
+                <Input
+                  id="occupation"
+                  value={formData.occupation}
+                  onChange={(e) => handleInputChange("occupation", e.target.value)}
+                  placeholder="Enter occupation"
+                />
+              </div>
+              <div>
+                <Label htmlFor="marital_status">Marital Status</Label>
+                <Select value={formData.marital_status} onValueChange={(value) => handleInputChange("marital_status", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select marital status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">Single</SelectItem>
+                    <SelectItem value="married">Married</SelectItem>
+                    <SelectItem value="divorced">Divorced</SelectItem>
+                    <SelectItem value="widowed">Widowed</SelectItem>
+                    <SelectItem value="separated">Separated</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div>
