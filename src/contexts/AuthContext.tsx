@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<'dentist' | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const determineUserRole = async (userId: string, email: string) => {
+  const determineUserRole = async (userId: string, email: string): Promise<'dentist' | null> => {
     // Check if user exists in dentists table
     const { data: dentistData } = await supabase
       .from('dentists')
