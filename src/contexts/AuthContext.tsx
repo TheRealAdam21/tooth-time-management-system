@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Determining user role for:', userId);
       
-      // Check if user exists in dentists table using user_id
+      // First check if user exists in dentists table using user_id
       const { data: dentistData, error } = await supabase
         .from('dentists')
         .select('id, email, first_name, last_name, user_id')
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
 
-        // Check if there's an existing dentist record with this email but no user_id
+        // Check if there's an existing dentist record with this email
         const { data: existingDentist, error: emailError } = await supabase
           .from('dentists')
           .select('id, email, first_name, last_name, user_id')
@@ -64,43 +64,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (existingDentist) {
           console.log('Found existing dentist record by email:', existingDentist);
           
-          // Update the existing record with the user_id
-          const { data: updatedDentist, error: updateError } = await supabase
-            .from('dentists')
-            .update({ user_id: userId })
-            .eq('id', existingDentist.id)
-            .select()
-            .single();
+          // If the existing dentist record has no user_id, update it
+          if (!existingDentist.user_id) {
+            const { data: updatedDentist, error: updateError } = await supabase
+              .from('dentists')
+              .update({ user_id: userId })
+              .eq('id', existingDentist.id)
+              .select()
+              .single();
 
-          if (updateError) {
-            console.error('Error updating dentist record:', updateError);
+            if (updateError) {
+              console.error('Error updating dentist record:', updateError);
+              return null;
+            }
+
+            console.log('Successfully updated dentist record with user_id:', updatedDentist);
+            return 'dentist';
+          } else if (existingDentist.user_id === userId) {
+            // Record already linked to this user
+            console.log('Dentist record already linked to user');
+            return 'dentist';
+          } else {
+            // Record linked to different user
+            console.log('Dentist record linked to different user');
             return null;
           }
-
-          console.log('Successfully updated dentist record with user_id:', updatedDentist);
-          return 'dentist';
         } else {
-          console.log('No existing dentist record found. Creating new one...');
-          
-          // Create new dentist record
-          const { data: newDentist, error: createError } = await supabase
-            .from('dentists')
-            .insert({
-              user_id: userId,
-              email: userData.user.email,
-              first_name: userData.user.user_metadata?.first_name || 'Dr.',
-              last_name: userData.user.user_metadata?.last_name || 'Dentist'
-            })
-            .select()
-            .single();
-          
-          if (createError) {
-            console.error('Error creating dentist record:', createError);
-            return null;
-          }
-          
-          console.log('Successfully created dentist record:', newDentist);
-          return 'dentist';
+          console.log('No dentist record found for this email');
+          return null;
         }
       }
     } catch (error) {
