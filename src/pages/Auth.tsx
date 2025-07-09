@@ -19,15 +19,11 @@ const Auth = () => {
   useEffect(() => {
     console.log('Auth page - user state:', { user: !!user, userRole, authLoading });
     
-    // Only redirect if we have a user and role determination is complete
-    if (user && userRole === 'dentist' && !authLoading) {
+    // Redirect if user is authenticated
+    if (user && !authLoading) {
       console.log('Redirecting to dashboard');
       toast.success("Welcome to your dashboard!");
       navigate('/', { replace: true });
-    } else if (user && !authLoading && userRole === null) {
-      // User is authenticated but not a dentist
-      console.log('User authenticated but not authorized as dentist');
-      toast.error("Access denied. This system is for authorized dentists only.");
     }
   }, [user, userRole, authLoading, navigate]);
 
@@ -49,11 +45,8 @@ const Auth = () => {
         console.error('Login error:', error);
         toast.error(error.message || "Login failed");
       } else {
-        console.log('Login successful, waiting for role verification');
+        console.log('Login successful');
         toast.success("Login successful!");
-        
-        // Navigation will be handled by the useEffect above
-        // when the auth state updates
       }
     } catch (error) {
       console.error('Unexpected login error:', error);
@@ -83,12 +76,12 @@ const Auth = () => {
             <Stethoscope className="h-8 w-8 text-blue-600" />
             <h1 className="text-3xl font-bold text-gray-800">Dental Clinic</h1>
           </div>
-          <p className="text-gray-600">Dentist Access Portal</p>
+          <p className="text-gray-600">Access Portal</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Dentist Login</CardTitle>
+            <CardTitle>Login</CardTitle>
             <CardDescription>
               Sign in to access the clinic management system
             </CardDescription>

@@ -20,86 +20,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<'dentist' | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const determineUserRole = async (userId: string): Promise<'dentist' | null> => {
-    try {
-      console.log('Determining user role for:', userId);
-      
-      // First check if user exists in dentists table using user_id
-      const { data: dentistData, error } = await supabase
-        .from('dentists')
-        .select('id, email, first_name, last_name, user_id')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking dentist role:', error);
-        return null;
-      }
-
-      if (dentistData) {
-        console.log('User is a dentist:', dentistData);
-        return 'dentist';
-      } else {
-        console.log('User not found by user_id. Checking by email...');
-        
-        // Get current user email
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user?.email) {
-          console.log('No user email found');
-          return null;
-        }
-
-        // Check if there's an existing dentist record with this email
-        const { data: existingDentist, error: emailError } = await supabase
-          .from('dentists')
-          .select('id, email, first_name, last_name, user_id')
-          .eq('email', userData.user.email)
-          .maybeSingle();
-
-        if (emailError) {
-          console.error('Error checking dentist by email:', emailError);
-          return null;
-        }
-
-        if (existingDentist) {
-          console.log('Found existing dentist record by email:', existingDentist);
-          
-          // If the existing dentist record has no user_id, update it
-          if (!existingDentist.user_id) {
-            const { data: updatedDentist, error: updateError } = await supabase
-              .from('dentists')
-              .update({ user_id: userId })
-              .eq('id', existingDentist.id)
-              .select()
-              .single();
-
-            if (updateError) {
-              console.error('Error updating dentist record:', updateError);
-              return null;
-            }
-
-            console.log('Successfully updated dentist record with user_id:', updatedDentist);
-            return 'dentist';
-          } else if (existingDentist.user_id === userId) {
-            // Record already linked to this user
-            console.log('Dentist record already linked to user');
-            return 'dentist';
-          } else {
-            // Record linked to different user
-            console.log('Dentist record linked to different user');
-            return null;
-          }
-        } else {
-          console.log('No dentist record found for this email');
-          return null;
-        }
-      }
-    } catch (error) {
-      console.error('Error in determineUserRole:', error);
-      return null;
-    }
-  };
-
   useEffect(() => {
     console.log('Setting up auth state listener');
     
@@ -112,16 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Defer role determination to prevent deadlocks
-          setTimeout(async () => {
-            const role = await determineUserRole(session.user.id);
-            setUserRole(role);
-            setLoading(false);
-          }, 100);
+          // Simply set role to dentist for any authenticated user
+          setUserRole('dentist');
         } else {
           setUserRole(null);
-          setLoading(false);
         }
+        setLoading(false);
       }
     );
 
@@ -142,8 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          const role = await determineUserRole(session.user.id);
-          setUserRole(role);
+          // Simply set role to dentist for any authenticated user
+          setUserRole('dentist');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
