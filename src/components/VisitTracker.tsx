@@ -77,6 +77,13 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
     }
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP'
+    }).format(amount);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -116,7 +123,7 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="treatment_cost">Treatment Cost ($)</Label>
+                      <Label htmlFor="treatment_cost">Treatment Cost (₱)</Label>
                       <Input
                         id="treatment_cost"
                         type="number"
@@ -194,7 +201,7 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
                       {visit.treatment_cost && (
                         <Badge className="bg-green-100 text-green-800">
                           <DollarSign className="h-3 w-3 mr-1" />
-                          ${visit.treatment_cost}
+                          {formatCurrency(visit.treatment_cost)}
                         </Badge>
                       )}
                     </div>

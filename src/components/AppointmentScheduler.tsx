@@ -32,6 +32,7 @@ const AppointmentScheduler = () => {
   }, [isAuthorized]);
 
   const fetchPatients = async () => {
+    console.log('Fetching patients...');
     const { data, error } = await supabase
       .from('patients')
       .select('id, first_name, last_name')
@@ -39,12 +40,15 @@ const AppointmentScheduler = () => {
 
     if (error) {
       console.error('Error fetching patients:', error);
+      toast.error('Failed to load patients');
     } else {
+      console.log('Patients fetched:', data);
       setPatients(data || []);
     }
   };
 
   const fetchDentists = async () => {
+    console.log('Fetching dentists...');
     const { data, error } = await supabase
       .from('dentists')
       .select('id, first_name, last_name, specialization')
@@ -52,13 +56,53 @@ const AppointmentScheduler = () => {
 
     if (error) {
       console.error('Error fetching dentists:', error);
+      toast.error('Failed to load dentists');
     } else {
+      console.log('Dentists fetched:', data);
       setDentists(data || []);
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const sendEmailNotification = async (appointmentData: any) => {
+    try {
+      console.log('Sending email notification...');
+      
+      // Get dentist and patient details
+      const [dentistResult, patientResult] = await Promise.all([
+        supabase.from('dentists').select('first_name, last_name, email').eq('id', appointmentData.dentist_id).single(),
+        supabase.from('patients').select('first_name, last_name').eq('id', appointmentData.patient_id).single()
+      ]);
+
+      if (dentistResult.error || patientResult.error) {
+        console.error('Error fetching details for email:', dentistResult.error || patientResult.error);
+        return;
+      }
+
+      const { data: result, error } = await supabase.functions.invoke('send-appointment-notification', {
+        body: {
+          dentistEmail: dentistResult.data.email,
+          dentistName: `${dentistResult.data.first_name} ${dentistResult.data.last_name}`,
+          patientName: `${patientResult.data.first_name} ${patientResult.data.last_name}`,
+          appointmentDate: new Date(appointmentData.appointment_datetime).toLocaleDateString(),
+          appointmentTime: new Date(appointmentData.appointment_datetime).toLocaleTimeString(),
+          serviceType: appointmentData.service_type,
+          notes: appointmentData.notes
+        }
+      });
+
+      if (error) {
+        console.error('Error sending email notification:', error);
+        toast.error('Appointment scheduled but email notification failed');
+      } else {
+        console.log('Email notification sent successfully');
+      }
+    } catch (error) {
+      console.error('Error in email notification:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +140,10 @@ const AppointmentScheduler = () => {
 
       if (error) throw error;
 
-      toast.success("Appointment scheduled successfully! Awaiting dentist approval.");
+      // Send email notification
+      await sendEmailNotification(validatedData);
+
+      toast.success("Appointment scheduled successfully! Email notification sent to dentist.");
       setFormData({
         patient_id: "",
         dentist_id: "",
