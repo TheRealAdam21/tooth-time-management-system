@@ -6,31 +6,44 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, User, FileText, CheckCircle, XCircle, Edit } from "lucide-react";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 const DentistDashboard = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isAuthorized, loading: authLoading } = useAuthGuard();
 
   useEffect(() => {
-    fetchAppointments();
-  }, []);
+    if (isAuthorized) {
+      fetchAppointments();
+    }
+  }, [isAuthorized]);
 
   const fetchAppointments = async () => {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select(`
-        *,
-        patient:patients(first_name, last_name, phone),
-        dentist:dentists(first_name, last_name)
-      `)
-      .order('appointment_datetime', { ascending: true });
+    if (!isAuthorized) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          patient:patients(first_name, last_name, phone),
+          dentist:dentists(first_name, last_name)
+        `)
+        .order('appointment_datetime', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching appointments:', error);
-    } else {
-      setAppointments(data || []);
+      if (error) {
+        console.error('Error fetching appointments:', error);
+        toast.error("Failed to fetch appointments. Please check your permissions.");
+      } else {
+        setAppointments(data || []);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const updateAppointmentStatus = async (appointmentId: string, status: string) => {
@@ -73,8 +86,16 @@ const DentistDashboard = () => {
     };
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return <div className="text-center">Loading appointments...</div>;
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Unauthorized access. Please log in as a dentist.</p>
+      </div>
+    );
   }
 
   return (

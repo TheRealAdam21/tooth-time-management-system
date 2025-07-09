@@ -8,8 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { appointmentSchema } from "@/lib/validationSchemas";
 
 const AppointmentScheduler = () => {
+  const { isAuthorized, loading: authLoading } = useAuthGuard();
   const [patients, setPatients] = useState<any[]>([]);
   const [dentists, setDentists] = useState<any[]>([]);
   const [formData, setFormData] = useState({
@@ -22,9 +25,11 @@ const AppointmentScheduler = () => {
   });
 
   useEffect(() => {
-    fetchPatients();
-    fetchDentists();
-  }, []);
+    if (isAuthorized) {
+      fetchPatients();
+      fetchDentists();
+    }
+  }, [isAuthorized]);
 
   const fetchPatients = async () => {
     const { data, error } = await supabase
@@ -59,16 +64,35 @@ const AppointmentScheduler = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isAuthorized) {
+      toast.error("Unauthorized access. Please log in as a dentist.");
+      return;
+    }
+    
     try {
-      const appointmentDateTime = `${formData.appointment_date} ${formData.appointment_time}`;
+      const appointmentDateTime = `${formData.appointment_date}T${formData.appointment_time}:00`;
+      
+      const appointmentData = {
+        patient_id: formData.patient_id,
+        dentist_id: formData.dentist_id,
+        appointment_datetime: appointmentDateTime,
+        service_type: formData.service_type,
+        notes: formData.notes || null
+      };
+
+      // Validate appointment data
+      const validatedData = appointmentSchema.parse(appointmentData);
       
       const { error } = await supabase
         .from('appointments')
-        .insert([{
-          ...formData,
-          appointment_datetime: appointmentDateTime,
+        .insert({
+          patient_id: validatedData.patient_id,
+          dentist_id: validatedData.dentist_id,
+          appointment_datetime: validatedData.appointment_datetime,
+          service_type: validatedData.service_type,
+          notes: validatedData.notes,
           status: 'pending'
-        }]);
+        });
 
       if (error) throw error;
 
@@ -81,9 +105,16 @@ const AppointmentScheduler = () => {
         service_type: "",
         notes: ""
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      toast.error("Failed to schedule appointment. Please try again.");
+      if (error.name === 'ZodError') {
+        const fieldErrors = error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`).join(', ');
+        toast.error(`Validation error: ${fieldErrors}`);
+      } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+        toast.error("Permission denied. Please ensure you're logged in as a dentist.");
+      } else {
+        toast.error("Failed to schedule appointment. Please try again.");
+      }
     }
   };
 
@@ -98,6 +129,18 @@ const AppointmentScheduler = () => {
     "Orthodontic Consultation",
     "Emergency"
   ];
+
+  if (authLoading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Unauthorized access. Please log in as a dentist.</p>
+      </div>
+    );
+  }
 
   return (
     <Card>

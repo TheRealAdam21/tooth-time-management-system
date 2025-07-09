@@ -22,17 +22,28 @@ const PatientRecordsAuth = ({ onAuthenticated, userEmail }: PatientRecordsAuthPr
     setLoading(true);
 
     try {
-      // Verify password by attempting to sign in
-      const { error } = await supabase.auth.signInWithPassword({
+      // Get current session to verify we're authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        toast.error("You must be logged in to access patient records");
+        setLoading(false);
+        return;
+      }
+
+      // Verify password matches current user's password
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: userEmail,
         password: password,
       });
 
       if (error) {
         toast.error("Invalid password");
-      } else {
+      } else if (data.user?.id === session.user.id) {
         toast.success("Access granted to patient records");
         onAuthenticated();
+      } else {
+        toast.error("Authentication failed");
       }
     } catch (error) {
       toast.error("Authentication failed");

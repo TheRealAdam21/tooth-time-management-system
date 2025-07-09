@@ -9,8 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { patientSchema, medicalHistorySchema } from "@/lib/validationSchemas";
 
 const PatientForm = () => {
+  const { isAuthorized, loading: authLoading } = useAuthGuard();
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -89,10 +92,16 @@ const PatientForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isAuthorized) {
+      toast.error("Unauthorized access. Please log in as a dentist.");
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
-      // First, insert patient data
+      // Validate patient data
       const patientData = {
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -109,6 +118,9 @@ const PatientForm = () => {
         insurance_policy_number: formData.insurance_policy_number,
         gender: formData.gender
       };
+
+      // Validate using schema
+      const validatedPatientData = patientSchema.parse(patientData);
 
       const { data: patientResult, error: patientError } = await supabase
         .from('patients')
@@ -146,6 +158,9 @@ const PatientForm = () => {
         blood_pressure: formData.blood_pressure,
         medical_conditions: formData.medical_conditions
       };
+
+      // Validate medical history data
+      const validatedMedicalData = medicalHistorySchema.parse(medicalHistoryData);
 
       const { error: medicalHistoryError } = await supabase
         .from('medical_history')
@@ -196,13 +211,32 @@ const PatientForm = () => {
         blood_pressure: "",
         medical_conditions: []
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      toast.error("Failed to register patient. Please try again.");
+      if (error.name === 'ZodError') {
+        const fieldErrors = error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`).join(', ');
+        toast.error(`Validation error: ${fieldErrors}`);
+      } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+        toast.error("Permission denied. Please ensure you're logged in as a dentist.");
+      } else {
+        toast.error("Failed to register patient. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (authLoading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Unauthorized access. Please log in as a dentist.</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
