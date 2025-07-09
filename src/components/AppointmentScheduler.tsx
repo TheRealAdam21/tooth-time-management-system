@@ -112,6 +112,32 @@ const AppointmentScheduler = () => {
       toast.error("Unauthorized access. Please log in as a dentist.");
       return;
     }
+
+    // Check for required fields before validation
+    if (!formData.patient_id) {
+      toast.error("Please select a patient");
+      return;
+    }
+
+    if (!formData.dentist_id) {
+      toast.error("Please select a dentist");
+      return;
+    }
+
+    if (!formData.service_type) {
+      toast.error("Please select a service type");
+      return;
+    }
+
+    if (!formData.appointment_date) {
+      toast.error("Please select an appointment date");
+      return;
+    }
+
+    if (!formData.appointment_time) {
+      toast.error("Please select an appointment time");
+      return;
+    }
     
     try {
       const appointmentDateTime = `${formData.appointment_date}T${formData.appointment_time}:00`;
@@ -196,7 +222,7 @@ const AppointmentScheduler = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="patient_id">Patient *</Label>
-              <Select value={formData.patient_id} onValueChange={(value) => handleInputChange("patient_id", value)}>
+              <Select value={formData.patient_id} onValueChange={(value) => handleInputChange("patient_id", value)} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select patient" />
                 </SelectTrigger>
@@ -212,7 +238,7 @@ const AppointmentScheduler = () => {
 
             <div>
               <Label htmlFor="dentist_id">Dentist *</Label>
-              <Select value={formData.dentist_id} onValueChange={(value) => handleInputChange("dentist_id", value)}>
+              <Select value={formData.dentist_id} onValueChange={(value) => handleInputChange("dentist_id", value)} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select dentist" />
                 </SelectTrigger>
@@ -252,7 +278,7 @@ const AppointmentScheduler = () => {
 
             <div className="md:col-span-2">
               <Label htmlFor="service_type">Service Type *</Label>
-              <Select value={formData.service_type} onValueChange={(value) => handleInputChange("service_type", value)}>
+              <Select value={formData.service_type} onValueChange={(value) => handleInputChange("service_type", value)} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select service type" />
                 </SelectTrigger>

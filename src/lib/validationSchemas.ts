@@ -19,11 +19,11 @@ export const patientSchema = z.object({
 });
 
 export const appointmentSchema = z.object({
-  patient_id: z.string().uuid('Invalid patient ID'),
-  dentist_id: z.string().uuid('Invalid dentist ID'),
+  patient_id: z.string().min(1, 'Please select a patient').uuid('Invalid patient ID'),
+  dentist_id: z.string().min(1, 'Please select a dentist').uuid('Invalid dentist ID'),
   appointment_datetime: z.string().min(1, 'Appointment date and time required'),
   service_type: z.string().min(1, 'Service type is required').max(100, 'Service type too long'),
-  notes: z.string().max(1000, 'Notes too long').optional(),
+  notes: z.string().optional().nullable(),
 });
 
 // Make medical history schema completely optional
