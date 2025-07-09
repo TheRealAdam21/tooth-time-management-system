@@ -9,11 +9,26 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && (!user || userRole !== 'dentist')) {
-      navigate('/auth');
+    console.log('Index page - auth state:', { 
+      user: !!user, 
+      userRole, 
+      loading,
+      userEmail: user?.email 
+    });
+
+    // Wait for auth to finish loading before making decisions
+    if (!loading) {
+      if (!user) {
+        console.log('No user found, redirecting to auth');
+        navigate('/auth');
+      } else if (userRole !== 'dentist') {
+        console.log('User is not a dentist, redirecting to auth');
+        navigate('/auth');
+      }
     }
   }, [user, userRole, loading, navigate]);
 
+  // Show loading while auth is initializing
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
@@ -25,8 +40,9 @@ const Index = () => {
     );
   }
 
+  // Show nothing while redirecting
   if (!user || userRole !== 'dentist') {
-    return null; // Will redirect to auth
+    return null;
   }
 
   return <DentistDashboardFull />;

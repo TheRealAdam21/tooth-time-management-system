@@ -13,33 +13,62 @@ import { useEffect } from "react";
 const Auth = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, userRole, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
+    console.log('Auth page - user state:', { user: !!user, userRole, authLoading });
+    
+    // Only redirect if we have a user and role determination is complete
+    if (user && userRole === 'dentist' && !authLoading) {
+      console.log('Redirecting to dashboard');
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, userRole, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!loginData.email || !loginData.password) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+
     setLoading(true);
+    console.log('Starting login process');
 
     try {
       const { error } = await signIn(loginData.email, loginData.password);
+      
       if (error) {
-        toast.error(error.message);
+        console.error('Login error:', error);
+        toast.error(error.message || "Login failed");
       } else {
+        console.log('Login successful, waiting for role verification');
         toast.success("Welcome back!");
-        navigate('/');
+        
+        // Navigation will be handled by the useEffect above
+        // when the auth state updates
       }
     } catch (error) {
+      console.error('Unexpected login error:', error);
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
   };
+
+  // Show loading if auth is still initializing
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
@@ -69,6 +98,7 @@ const Auth = () => {
                   value={loginData.email}
                   onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                   required
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -79,6 +109,7 @@ const Auth = () => {
                   value={loginData.password}
                   onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                   required
+                  disabled={loading}
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
