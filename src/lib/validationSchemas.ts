@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const patientSchema = z.object({
@@ -25,6 +26,7 @@ export const appointmentSchema = z.object({
   notes: z.string().max(1000, 'Notes too long').optional(),
 });
 
+// Make medical history schema completely optional
 export const medicalHistorySchema = z.object({
   patient_id: z.string().uuid('Invalid patient ID'),
   medical_conditions: z.array(z.string()).optional(),
@@ -51,7 +53,7 @@ export const medicalHistorySchema = z.object({
   is_nursing: z.enum(['yes', 'no']).optional(),
   taking_birth_control: z.enum(['yes', 'no']).optional(),
   other_allergy: z.string().max(500, 'Other allergies too long').optional(),
-});
+}).optional();
 
 export type PatientFormData = z.infer<typeof patientSchema>;
 export type AppointmentFormData = z.infer<typeof appointmentSchema>;
