@@ -22,7 +22,12 @@ const Auth = () => {
     // Only redirect if we have a user and role determination is complete
     if (user && userRole === 'dentist' && !authLoading) {
       console.log('Redirecting to dashboard');
-      navigate('/');
+      toast.success("Welcome to your dashboard!");
+      navigate('/', { replace: true });
+    } else if (user && !authLoading && userRole === null) {
+      // User is authenticated but not a dentist
+      console.log('User authenticated but not authorized as dentist');
+      toast.error("Access denied. This system is for authorized dentists only.");
     }
   }, [user, userRole, authLoading, navigate]);
 
@@ -45,7 +50,7 @@ const Auth = () => {
         toast.error(error.message || "Login failed");
       } else {
         console.log('Login successful, waiting for role verification');
-        toast.success("Welcome back!");
+        toast.success("Login successful!");
         
         // Navigation will be handled by the useEffect above
         // when the auth state updates
