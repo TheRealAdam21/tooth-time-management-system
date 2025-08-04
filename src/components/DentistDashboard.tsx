@@ -5,14 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, User, FileText, CheckCircle, XCircle, Edit, Trash2 } from "lucide-react";
+import { Calendar, Clock, User, FileText, CheckCircle, XCircle, Edit, Trash2, RefreshCw } from "lucide-react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import AppointmentCompletionModal from "./AppointmentCompletionModal";
+import AppointmentRescheduleModal from "./AppointmentRescheduleModal";
 
 const DentistDashboard = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const { isAuthorized, loading: authLoading } = useAuthGuard();
 
@@ -86,6 +88,11 @@ const DentistDashboard = () => {
   const handleCompleteAppointment = (appointment: any) => {
     setSelectedAppointment(appointment);
     setCompletionModalOpen(true);
+  };
+
+  const handleRescheduleAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setRescheduleModalOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -191,11 +198,12 @@ const DentistDashboard = () => {
                               </Button>
                               <Button
                                 size="sm"
-                                variant="destructive"
-                                onClick={() => updateAppointmentStatus(appointment.id, 'cancelled')}
+                                variant="outline"
+                                onClick={() => handleRescheduleAppointment(appointment)}
+                                className="border-blue-600 text-blue-600 hover:bg-blue-50"
                               >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Cancel
+                                <RefreshCw className="h-4 w-4 mr-1" />
+                                Reschedule
                               </Button>
                             </>
                           )}
@@ -212,11 +220,12 @@ const DentistDashboard = () => {
                               </Button>
                               <Button
                                 size="sm"
-                                variant="destructive"
-                                onClick={() => updateAppointmentStatus(appointment.id, 'cancelled')}
+                                variant="outline"
+                                onClick={() => handleRescheduleAppointment(appointment)}
+                                className="border-blue-600 text-blue-600 hover:bg-blue-50"
                               >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Cancel
+                                <RefreshCw className="h-4 w-4 mr-1" />
+                                Reschedule
                               </Button>
                             </>
                           )}
@@ -248,6 +257,13 @@ const DentistDashboard = () => {
         onClose={() => setCompletionModalOpen(false)}
         appointment={selectedAppointment}
         onComplete={fetchAppointments}
+      />
+
+      <AppointmentRescheduleModal
+        isOpen={rescheduleModalOpen}
+        onClose={() => setRescheduleModalOpen(false)}
+        appointment={selectedAppointment}
+        onReschedule={fetchAppointments}
       />
     </div>
   );
