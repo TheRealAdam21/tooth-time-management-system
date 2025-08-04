@@ -67,43 +67,6 @@ const AppointmentScheduler = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const sendEmailNotification = async (appointmentData: any) => {
-    try {
-      console.log('Sending email notification...');
-      
-      // Get dentist and patient details
-      const [dentistResult, patientResult] = await Promise.all([
-        supabase.from('dentists').select('first_name, last_name, email').eq('id', appointmentData.dentist_id).single(),
-        supabase.from('patients').select('first_name, last_name').eq('id', appointmentData.patient_id).single()
-      ]);
-
-      if (dentistResult.error || patientResult.error) {
-        console.error('Error fetching details for email:', dentistResult.error || patientResult.error);
-        return;
-      }
-
-      const { data: result, error } = await supabase.functions.invoke('send-appointment-notification', {
-        body: {
-          dentistEmail: dentistResult.data.email,
-          dentistName: `${dentistResult.data.first_name} ${dentistResult.data.last_name}`,
-          patientName: `${patientResult.data.first_name} ${patientResult.data.last_name}`,
-          appointmentDate: new Date(appointmentData.appointment_datetime).toLocaleDateString(),
-          appointmentTime: new Date(appointmentData.appointment_datetime).toLocaleTimeString(),
-          serviceType: appointmentData.service_type,
-          notes: appointmentData.notes
-        }
-      });
-
-      if (error) {
-        console.error('Error sending email notification:', error);
-        toast.error('Appointment scheduled but email notification failed');
-      } else {
-        console.log('Email notification sent successfully');
-      }
-    } catch (error) {
-      console.error('Error in email notification:', error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,10 +129,7 @@ const AppointmentScheduler = () => {
 
       if (error) throw error;
 
-      // Send email notification
-      await sendEmailNotification(validatedData);
-
-      toast.success("Appointment scheduled successfully! Email notification sent to dentist.");
+      toast.success("Appointment scheduled successfully!");
       setFormData({
         patient_id: "",
         dentist_id: "",
