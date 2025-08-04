@@ -160,7 +160,8 @@ const AppointmentScheduler = () => {
     "Extraction",
     "Whitening",
     "Orthodontic Consultation",
-    "Emergency"
+    "Emergency",
+    "Other"
   ];
 
   if (authLoading) {
