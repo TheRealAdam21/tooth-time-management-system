@@ -5,12 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, User, FileText, CheckCircle, XCircle, Edit } from "lucide-react";
+import { Calendar, Clock, User, FileText, CheckCircle, XCircle, Edit, Trash2 } from "lucide-react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import AppointmentCompletionModal from "./AppointmentCompletionModal";
 
 const DentistDashboard = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [completionModalOpen, setCompletionModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const { isAuthorized, loading: authLoading } = useAuthGuard();
 
   useEffect(() => {
@@ -59,6 +62,30 @@ const DentistDashboard = () => {
       toast.success(`Appointment ${status} successfully`);
       fetchAppointments();
     }
+  };
+
+  const deleteAppointment = async (appointmentId: string) => {
+    if (!confirm("Are you sure you want to delete this appointment? This action cannot be undone.")) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('appointments')
+      .delete()
+      .eq('id', appointmentId);
+
+    if (error) {
+      console.error('Error deleting appointment:', error);
+      toast.error("Failed to delete appointment");
+    } else {
+      toast.success("Appointment deleted successfully");
+      fetchAppointments();
+    }
+  };
+
+  const handleCompleteAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setCompletionModalOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -174,13 +201,35 @@ const DentistDashboard = () => {
                           )}
                           
                           {appointment.status === 'approved' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleCompleteAppointment(appointment)}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Mark Complete
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => updateAppointmentStatus(appointment.id, 'cancelled')}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Cancel
+                              </Button>
+                            </>
+                          )}
+
+                          {(appointment.status === 'approved' || appointment.status === 'completed' || appointment.status === 'cancelled') && (
                             <Button
                               size="sm"
-                              onClick={() => updateAppointmentStatus(appointment.id, 'completed')}
-                              className="bg-blue-600 hover:bg-blue-700"
+                              variant="outline"
+                              onClick={() => deleteAppointment(appointment.id)}
+                              className="text-red-600 border-red-600 hover:bg-red-50"
                             >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Mark Complete
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
                             </Button>
                           )}
                         </div>
@@ -193,6 +242,13 @@ const DentistDashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      <AppointmentCompletionModal
+        isOpen={completionModalOpen}
+        onClose={() => setCompletionModalOpen(false)}
+        appointment={selectedAppointment}
+        onComplete={fetchAppointments}
+      />
     </div>
   );
 };
