@@ -133,37 +133,60 @@ const MedicalHistoryDisplay = ({ patientId }: MedicalHistoryDisplayProps) => {
         )}
 
         {/* Health Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          {medicalHistory.in_good_health && (
-            <div>
-              <span className="font-medium">Good Health:</span> {medicalHistory.in_good_health}
-            </div>
-          )}
-          {medicalHistory.taking_medication && (
-            <div>
-              <span className="font-medium">Taking Medication:</span> {medicalHistory.taking_medication}
-            </div>
-          )}
-          {medicalHistory.uses_tobacco && (
-            <div>
-              <span className="font-medium">Uses Tobacco:</span> {medicalHistory.uses_tobacco}
-            </div>
-          )}
-          {medicalHistory.uses_alcohol_drugs && (
-            <div>
-              <span className="font-medium">Uses Alcohol/Drugs:</span> {medicalHistory.uses_alcohol_drugs}
-            </div>
-          )}
-          {medicalHistory.blood_type && (
-            <div>
-              <span className="font-medium">Blood Type:</span> {medicalHistory.blood_type}
-            </div>
-          )}
-          {medicalHistory.blood_pressure && (
-            <div>
-              <span className="font-medium">Blood Pressure:</span> {medicalHistory.blood_pressure}
-            </div>
-          )}
+        <div>
+          <h4 className="font-semibold text-base mb-3">Health Status</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            {medicalHistory.in_good_health && (
+              <div>
+                <span className="font-medium">Good Health:</span> {medicalHistory.in_good_health}
+              </div>
+            )}
+            {medicalHistory.in_medical_treatment && (
+              <div>
+                <span className="font-medium">Under Medical Treatment:</span> {medicalHistory.in_medical_treatment}
+              </div>
+            )}
+            {medicalHistory.serious_illness && (
+              <div>
+                <span className="font-medium">Serious Illness:</span> {medicalHistory.serious_illness}
+              </div>
+            )}
+            {medicalHistory.hospitalized && (
+              <div>
+                <span className="font-medium">Hospitalized:</span> {medicalHistory.hospitalized}
+              </div>
+            )}
+            {medicalHistory.taking_medication && (
+              <div>
+                <span className="font-medium">Taking Medication:</span> {medicalHistory.taking_medication}
+              </div>
+            )}
+            {medicalHistory.uses_tobacco && (
+              <div>
+                <span className="font-medium">Uses Tobacco:</span> {medicalHistory.uses_tobacco}
+              </div>
+            )}
+            {medicalHistory.uses_alcohol_drugs && (
+              <div>
+                <span className="font-medium">Uses Alcohol/Drugs:</span> {medicalHistory.uses_alcohol_drugs}
+              </div>
+            )}
+            {medicalHistory.blood_type && (
+              <div>
+                <span className="font-medium">Blood Type:</span> {medicalHistory.blood_type}
+              </div>
+            )}
+            {medicalHistory.blood_pressure && (
+              <div>
+                <span className="font-medium">Blood Pressure:</span> {medicalHistory.blood_pressure}
+              </div>
+            )}
+            {medicalHistory.bleeding_time && (
+              <div>
+                <span className="font-medium">Bleeding Time:</span> {medicalHistory.bleeding_time}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Pregnancy/Nursing Status */}
@@ -192,10 +215,15 @@ const MedicalHistoryDisplay = ({ patientId }: MedicalHistoryDisplayProps) => {
 
         {/* Additional Details */}
         {(medicalHistory.medication_details || medicalHistory.illness_description || 
-          medicalHistory.hospitalization_details) && (
+          medicalHistory.hospitalization_details || medicalHistory.treatment_condition) && (
           <div>
             <h4 className="font-semibold text-base mb-3">Additional Details</h4>
             <div className="space-y-2 text-sm">
+              {medicalHistory.treatment_condition && (
+                <div>
+                  <span className="font-medium">Treatment Condition:</span> {medicalHistory.treatment_condition}
+                </div>
+              )}
               {medicalHistory.medication_details && (
                 <div>
                   <span className="font-medium">Medication Details:</span> {medicalHistory.medication_details}
