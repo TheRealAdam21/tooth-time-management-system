@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Plus, Calendar, DollarSign } from "lucide-react";
+import { FileText, Plus, Calendar, DollarSign, History } from "lucide-react";
 import MedicalHistoryDisplay from "./MedicalHistoryDisplay";
 
 interface VisitTrackerProps {
@@ -87,9 +88,6 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Medical History Display */}
-      <MedicalHistoryDisplay patientId={patient.id} />
-      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -97,13 +95,30 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
               <FileText className="h-5 w-5 text-blue-600" />
               Visit Records for {patient.first_name} {patient.last_name}
             </div>
-            <Button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Visit
-            </Button>
+            <div className="flex items-center gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <History className="h-4 w-4 mr-1" />
+                    Medical History
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Medical History - {patient.first_name} {patient.last_name}</DialogTitle>
+                  </DialogHeader>
+                  <MedicalHistoryDisplay patientId={patient.id} />
+                </DialogContent>
+              </Dialog>
+              
+              <Button
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Visit
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
