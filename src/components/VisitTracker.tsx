@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Plus, Calendar, DollarSign } from "lucide-react";
+import MedicalHistoryDisplay from "./MedicalHistoryDisplay";
 
 interface VisitTrackerProps {
   patient: any;
@@ -86,6 +87,9 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Medical History Display */}
+      <MedicalHistoryDisplay patientId={patient.id} />
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
