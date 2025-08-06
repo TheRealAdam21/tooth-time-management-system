@@ -225,6 +225,7 @@ export type Database = {
           occupation: string | null
           phone: string
           updated_at: string
+          xray_images: string[] | null
         }
         Insert: {
           address?: string | null
@@ -245,6 +246,7 @@ export type Database = {
           occupation?: string | null
           phone: string
           updated_at?: string
+          xray_images?: string[] | null
         }
         Update: {
           address?: string | null
@@ -265,6 +267,7 @@ export type Database = {
           occupation?: string | null
           phone?: string
           updated_at?: string
+          xray_images?: string[] | null
         }
         Relationships: []
       }
