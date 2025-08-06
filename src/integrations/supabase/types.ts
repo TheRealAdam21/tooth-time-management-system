@@ -323,6 +323,7 @@ export type Database = {
           treatment_cost: number | null
           updated_at: string
           visit_date: string
+          xray_images: string[] | null
         }
         Insert: {
           created_at?: string
@@ -334,6 +335,7 @@ export type Database = {
           treatment_cost?: number | null
           updated_at?: string
           visit_date: string
+          xray_images?: string[] | null
         }
         Update: {
           created_at?: string
@@ -345,6 +347,7 @@ export type Database = {
           treatment_cost?: number | null
           updated_at?: string
           visit_date?: string
+          xray_images?: string[] | null
         }
         Relationships: [
           {

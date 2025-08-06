@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Plus, Calendar, DollarSign, History } from "lucide-react";
+import { FileText, Plus, Calendar, DollarSign, History, Image as ImageIcon } from "lucide-react";
 import MedicalHistoryDisplay from "./MedicalHistoryDisplay";
+import XrayImageUpload from "./XrayImageUpload";
 
 interface VisitTrackerProps {
   patient: any;
@@ -26,6 +27,7 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
     treatment_cost: "",
     notes: ""
   });
+  const [xrayImages, setXrayImages] = useState<string[]>([]);
 
   useEffect(() => {
     fetchVisits();
@@ -49,6 +51,10 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleXrayImagesChange = (images: string[]) => {
+    setXrayImages(images);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -58,7 +64,8 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
         .insert([{
           ...formData,
           patient_id: patient.id,
-          treatment_cost: formData.treatment_cost ? parseFloat(formData.treatment_cost) : null
+          treatment_cost: formData.treatment_cost ? parseFloat(formData.treatment_cost) : null,
+          xray_images: xrayImages.length > 0 ? xrayImages : null
         }]);
 
       if (error) throw error;
@@ -71,6 +78,7 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
         treatment_cost: "",
         notes: ""
       });
+      setXrayImages([]);
       setShowAddForm(false);
       fetchVisits();
     } catch (error) {
@@ -186,6 +194,11 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
                     />
                   </div>
 
+                  <XrayImageUpload
+                    existingImages={xrayImages}
+                    onImagesChange={handleXrayImagesChange}
+                  />
+
                   <div className="flex gap-2">
                     <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                       Save Visit Record
@@ -217,12 +230,20 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
                           {new Date(visit.visit_date).toLocaleDateString()}
                         </span>
                       </div>
-                      {visit.treatment_cost && (
-                        <Badge className="bg-green-100 text-green-800">
-                          <DollarSign className="h-3 w-3 mr-1" />
-                          {formatCurrency(visit.treatment_cost)}
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {visit.treatment_cost && (
+                          <Badge className="bg-green-100 text-green-800">
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            {formatCurrency(visit.treatment_cost)}
+                          </Badge>
+                        )}
+                        {visit.xray_images && visit.xray_images.length > 0 && (
+                          <Badge className="bg-blue-100 text-blue-800">
+                            <ImageIcon className="h-3 w-3 mr-1" />
+                            {visit.xray_images.length} X-ray{visit.xray_images.length > 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-3">
@@ -240,6 +261,17 @@ const VisitTracker = ({ patient }: VisitTrackerProps) => {
                         <div>
                           <h4 className="font-semibold text-sm text-gray-700">Notes:</h4>
                           <p className="text-sm text-gray-600">{visit.notes}</p>
+                        </div>
+                      )}
+
+                      {visit.xray_images && visit.xray_images.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-sm text-gray-700 mb-2">X-ray Images:</h4>
+                          <XrayImageUpload
+                            visitId={visit.id}
+                            existingImages={visit.xray_images}
+                            onImagesChange={() => {}} // Read-only mode for existing visits
+                          />
                         </div>
                       )}
                     </div>
