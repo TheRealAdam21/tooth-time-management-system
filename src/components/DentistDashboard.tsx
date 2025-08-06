@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, User, FileText, CheckCircle, XCircle, Edit, Trash2, RefreshCw } from "lucide-react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import AppointmentCompletionModal from "./AppointmentCompletionModal";
+import AppointmentCompletionModalWithXrays from "./AppointmentCompletionModalWithXrays";
 import AppointmentRescheduleModal from "./AppointmentRescheduleModal";
 
 const DentistDashboard = () => {
@@ -252,7 +251,7 @@ const DentistDashboard = () => {
         </CardContent>
       </Card>
 
-      <AppointmentCompletionModal
+      <AppointmentCompletionModalWithXrays
         isOpen={completionModalOpen}
         onClose={() => setCompletionModalOpen(false)}
         appointment={selectedAppointment}
