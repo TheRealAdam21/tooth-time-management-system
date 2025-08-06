@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Phone, Mail, Calendar, FileText, Eye } from "lucide-react";
+import { User, Phone, Mail, Calendar, FileText, Eye, Image as ImageIcon } from "lucide-react";
 import VisitTracker from "./VisitTracker";
+import PatientXrayManager from "./PatientXrayManager";
 
 interface PatientListProps {
   showVisits?: boolean;
@@ -17,6 +18,7 @@ const PatientList = ({ showVisits = false }: PatientListProps) => {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'list' | 'visits' | 'xrays'>('list');
 
   useEffect(() => {
     fetchPatients();
@@ -46,17 +48,38 @@ const PatientList = ({ showVisits = false }: PatientListProps) => {
     return <div className="text-center">Loading patients...</div>;
   }
 
-  if (selectedPatient && showVisits) {
+  if (selectedPatient && viewMode === 'visits') {
     return (
       <div>
         <Button 
-          onClick={() => setSelectedPatient(null)} 
+          onClick={() => {
+            setSelectedPatient(null);
+            setViewMode('list');
+          }} 
           className="mb-4"
           variant="outline"
         >
           ← Back to Patient List
         </Button>
         <VisitTracker patient={selectedPatient} />
+      </div>
+    );
+  }
+
+  if (selectedPatient && viewMode === 'xrays') {
+    return (
+      <div>
+        <Button 
+          onClick={() => {
+            setSelectedPatient(null);
+            setViewMode('list');
+          }} 
+          className="mb-4"
+          variant="outline"
+        >
+          ← Back to Patient List
+        </Button>
+        <PatientXrayManager patient={selectedPatient} />
       </div>
     );
   }
@@ -97,6 +120,12 @@ const PatientList = ({ showVisits = false }: PatientListProps) => {
                           {patient.gender && (
                             <Badge variant="outline">{patient.gender}</Badge>
                           )}
+                          {patient.xray_images && patient.xray_images.length > 0 && (
+                            <Badge className="bg-blue-100 text-blue-800">
+                              <ImageIcon className="h-3 w-3 mr-1" />
+                              {patient.xray_images.length} X-ray{patient.xray_images.length > 1 ? 's' : ''}
+                            </Badge>
+                          )}
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
@@ -135,15 +164,31 @@ const PatientList = ({ showVisits = false }: PatientListProps) => {
                         )}
                       </div>
 
-                      {showVisits && (
+                      <div className="flex gap-2">
                         <Button
-                          onClick={() => setSelectedPatient(patient)}
-                          className="bg-blue-600 hover:bg-blue-700"
+                          onClick={() => {
+                            setSelectedPatient(patient);
+                            setViewMode('xrays');
+                          }}
+                          variant="outline"
+                          size="sm"
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Records
+                          <ImageIcon className="h-4 w-4 mr-1" />
+                          X-rays
                         </Button>
-                      )}
+                        {showVisits && (
+                          <Button
+                            onClick={() => {
+                              setSelectedPatient(patient);
+                              setViewMode('visits');
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Records
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
